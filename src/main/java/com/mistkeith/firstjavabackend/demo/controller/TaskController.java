@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mistkeith.firstjavabackend.demo.entity.Task;
+import com.mistkeith.firstjavabackend.demo.repository.ITaskRepository;
 import com.mistkeith.firstjavabackend.utils.TaskOperation;
 
 @RestController
@@ -24,21 +25,10 @@ public class TaskController {
 
     private List<Task> taskList = new ArrayList<Task>();
 
-    public TaskController() {
-        taskList.add(new Task(1l, "Заварить чай", 3, "Заварить чай в чайнике", "2004-04-04 12:22:45",
-                "2060-04-02 15:55:00", "Чайник", "Mistkeith"));
-        taskList.add(new Task(90l, "Сделать кофе", 0, "Заварить кофе", "2000-12-01 12:00:00", "2015-12-02 15:12:44",
-                "Чайник", "Nigless"));
-        taskList.add(new Task(91l, "Писать коды фронтэндовские", 0, "Ниглесс ебашет коды, взлом пентагона, виу виу",
-                "2023-12-01 12:00:00", "2026-12-02 15:12:44", "Nigless", "Mistkeith"));
-        taskList.add(new Task(92l, "London is capital of Great Britan", 0, "Checking english is working correctly.",
-                "2023-12-01 12:00:00", "2026-12-02 15:12:44", "Testing", "Mistkeith"));
-        taskList.add(new Task(3l, "3", 3, "Three", "2033-03-03 03:33:33", "2033-03-03 23:33:33", "3", "3"));
-        taskList.add(new Task(31l, "QNC", 3, "Three", "2033-03-03s 03:33:33", "2033-03-03 23:33:33", "3", "3"));
-        taskList.add(new Task(32l, "QNA", 3, "Three", "2033-03-03 03:33:33", "2033-03-03 23:33:33", "3", "3"));
-        taskList.add(new Task(33l, "QNB", 3, "Three", "2033-03-03 03:33:33", "2033-03-03 23:33:33", "3", "3"));
-        taskList.add(new Task(34l, "QND", 3, "Three", "2033-03-03 03:33:33", "2033-03-03 23:33:33", "3", "3"));
-        taskList.add(new Task(199l, "199", 3, "Three", "2033-03-03 03:33:33", "2033-03-03 23:33:33", "3", "3"));
+    public final ITaskRepository taskRepository;
+
+    public TaskController(ITaskRepository taskRepository) {
+        this.taskRepository = taskRepository;
     }
 
     /**
@@ -55,8 +45,11 @@ public class TaskController {
             String sort,
             boolean reverse) {
 
+        // Load taskRepository to Task util
+        TaskOperation taskOperation = new TaskOperation(this.taskRepository.findAll());
+
         // Load taskList to Task util
-        TaskOperation taskOperation = new TaskOperation(taskList);
+        // TaskOperation taskOperation = new TaskOperation(taskList);
 
         // Search & Sort
         taskOperation.search(search);
