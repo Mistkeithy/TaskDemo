@@ -3,6 +3,7 @@ package com.mistkeith.firstjavabackend.demo.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -23,8 +24,7 @@ import com.mistkeith.firstjavabackend.utils.TaskOperation;
 @CrossOrigin
 public class TaskController {
 
-    private List<Task> taskList = new ArrayList<Task>();
-
+    @Autowired
     public final ITaskRepository taskRepository;
 
     public TaskController(ITaskRepository taskRepository) {
@@ -68,6 +68,8 @@ public class TaskController {
      */
     @PostMapping("/tasks")
     ResponseEntity<?> newTasks(@RequestBody List<Task> newTasks) {
+
+        // Is no tasks
 
         // Request is empty
         if (newTasks.isEmpty())
