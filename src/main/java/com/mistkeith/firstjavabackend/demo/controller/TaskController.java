@@ -2,6 +2,7 @@ package com.mistkeith.firstjavabackend.demo.controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,7 +26,7 @@ import com.mistkeith.firstjavabackend.utils.TaskOperation;
 public class TaskController {
 
     @Autowired
-    public final ITaskRepository taskRepository;
+    private final ITaskRepository taskRepository;
 
     public TaskController(ITaskRepository taskRepository) {
         this.taskRepository = taskRepository;
@@ -48,9 +49,6 @@ public class TaskController {
         // Load taskRepository to Task util
         TaskOperation taskOperation = new TaskOperation(this.taskRepository.findAll());
 
-        // Load taskList to Task util
-        // TaskOperation taskOperation = new TaskOperation(taskList);
-
         // Search & Sort
         taskOperation.search(search);
         taskOperation.sort(sort);
@@ -69,20 +67,18 @@ public class TaskController {
     @PostMapping("/tasks")
     ResponseEntity<?> newTasks(@RequestBody List<Task> newTasks) {
 
-        // Is no tasks
-
         // Request is empty
         if (newTasks.isEmpty())
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
 
         // Find the last ID
-        Long lastId = taskList.get(taskList.size() - 1).getId();
+        Long lastId = taskRepository.findById(taskRepository.count() - 1).getId();
 
         // Add these new elements to an array (ignore)
         for (Task task : newTasks) {
             lastId++;
             task.setId(lastId); // force order by Id
-            taskList.add(task);
+            taskRepository.save(task);
         }
 
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -98,21 +94,21 @@ public class TaskController {
     @PutMapping("/tasks")
     ResponseEntity<?> editTasks(@RequestBody List<Task> editTasks) {
 
-        // Request is empty
-        if (editTasks.isEmpty())
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+        // // Request is empty
+        // if (editTasks.isEmpty())
+        // return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
 
-        // The temporary list
-        List<Task> tempList = new ArrayList<Task>();
+        // // The temporary list
+        // List<Task> tempList = new ArrayList<Task>();
 
-        for (Task task : taskList) {
-            for (Task editTask : editTasks)
-                if (task.getId() == editTask.getId()) // task matching by Id
-                    task = editTask;
-            tempList.add(task);
-        }
+        // for (Task task : taskRepository) {
+        // for (Task editTask : editTasks)
+        // if (task.getId() == editTask.getId()) // task matching by Id
+        // task = editTask;
+        // tempList.add(task);
+        // }
 
-        taskList = tempList;
+        // taskRepository = tempList;
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(null);
@@ -131,17 +127,26 @@ public class TaskController {
         if (ids == null)
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
 
-        // The temporary list
-        List<Task> tempList = new ArrayList<Task>();
+        // Optional<Task> task = taskRepository.findById(id);
 
-        for (Task task : taskList) // send the match to tempList<Task>
-            for (Long id : ids)
-                if (task.getId().longValue() == id) { // task matching by Id
-                    tempList.add(task);
-                    break; // stop iteration if found
-                }
-        for (Task task : tempList) // remove match from taskList<Task>
-            taskList.remove(task);
+        // if (task.isPresent())
+        // return ResponseEntity.ok(task.get());
+
+        for (Long id : ids)
+            if (taskRepository.findById(id).get().getId() == id)
+                taskRepository.deleteById(id);
+
+        // // The temporary list
+        // List<Task> tempList = new ArrayList<Task>();
+
+        // for (Task task : taskRepository) // send the match to tempList<Task>
+        // for (Long id : ids)
+        // if (task.getId().longValue() == id) { // task matching by Id
+        // tempList.add(task);
+        // break; // stop iteration if found
+        // }
+        // for (Task task : tempList) // remove match from taskRepository<Task>
+        // taskRepository.remove(task);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(null);
@@ -156,11 +161,17 @@ public class TaskController {
     @GetMapping("/tasks/{id}")
     public ResponseEntity<Task> getTaskById(@PathVariable(value = "id") Long id) {
 
-        for (Task task : taskList)
-            if (task.getId().longValue() == id) // task matching by Id
-                return ResponseEntity.ok(task);
+        Optional<Task> task = taskRepository.findById(id);
 
+        if (task.isPresent())
+            return ResponseEntity.ok(task.get());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+
+        // for (Task task : taskRepository)
+        // if (task.getId().longValue() == id) // task matching by Id
+        // return ResponseEntity.ok(task);
+
+        // return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
     }
 
     /**
@@ -176,20 +187,32 @@ public class TaskController {
 
         // Request is empty
         if (editTask.isEmpty())
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 
-        editTask.setId(id); // force Id assigment
-
-        // The temporary list
-        List<Task> tempList = new ArrayList<Task>();
-
-        for (Task task : taskList) {
-            if (task.getId().longValue() == id) // task matching by Id
-                task = editTask;
-            tempList.add(task);
+        try {
+            Task task = taskRepository.findById(id).get();
+            task.setId(id);
+            task.setName(editTask.getName());
+            task.setContent(editTask.getContent());
+            task.setStartDate(editTask.getStartDate());
+            task.setEndDate(editTask.getEndDate());
+            task.setDestination(editTask.getDestination());
+            task.setStatus(editTask.getStatus());
+            task.setAuthor(editTask.getAuthor());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
 
-        taskList = tempList;
+        // The temporary list
+        // List<Task> tempList = new ArrayList<Task>();
+
+        // for (Task task : taskRepository) {
+        // if (task.getId().longValue() == id) // task matching by Id
+        // task = editTask;
+        // tempList.add(task);
+        // }
+
+        // taskRepository = tempList;
 
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
@@ -203,11 +226,17 @@ public class TaskController {
     @DeleteMapping("/tasks/{id}")
     public ResponseEntity<?> removeTaskById(@PathVariable(value = "id") Long id) {
 
-        for (Task task : taskList)
-            if (task.getId().longValue() == id) { // task matching by Id
-                taskList.remove(task);
-                return ResponseEntity.status(HttpStatus.OK).body(null);
-            }
+        try {
+            taskRepository.deleteById(id);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+
+        // for (Task task : taskRepository)
+        // if (task.getId().longValue() == id) { // task matching by Id
+        // taskRepository.remove(task);
+        // return ResponseEntity.status(HttpStatus.OK).body(null);
+        // }
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
     }
