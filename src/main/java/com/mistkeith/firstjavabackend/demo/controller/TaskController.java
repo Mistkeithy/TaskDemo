@@ -46,16 +46,18 @@ public class TaskController {
             String sort,
             boolean reverse) {
 
-        // Load taskRepository to Task util
-        TaskOperation taskOperation = new TaskOperation(this.taskRepository.findAll());
+        // // Load taskRepository to Task util
+        // TaskOperation taskOperation = new
+        // TaskOperation(this.taskRepository.findAll());
 
-        // Search & Sort
-        taskOperation.search(search);
-        taskOperation.sort(sort);
-        if (reverse) // reverse list
-            taskOperation.reverse();
+        // // Search & Sort
+        // taskOperation.search(search);
+        // taskOperation.sort(sort);
+        // if (reverse) // reverse list
+        // taskOperation.reverse();
 
-        return taskOperation.getTasks();
+        // return taskOperation.getTasks();
+        return taskRepository.findAll();
     }
 
     /**
@@ -69,19 +71,33 @@ public class TaskController {
 
         // Request is empty
         if (newTasks.isEmpty())
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+            return ResponseEntity
+                    .status(HttpStatus.NO_CONTENT)
+                    .body(null);
 
-        // Find the last ID
-        Long lastId = taskRepository.findById(taskRepository.count() - 1).getId();
+        // taskRepository.save(new Task("first", 1, "OwO", "0", "0", "1", "Mistkeith"));
+        // taskRepository.save(new Task("two", 1, "LOX", "0", "0", "1", "Nigless"));
+        // taskRepository.save(new Task("three", 1, "UWU", "0", "0", "1", "Mistkeith"));
 
-        // Add these new elements to an array (ignore)
-        for (Task task : newTasks) {
-            lastId++;
-            task.setId(lastId); // force order by Id
-            taskRepository.save(task);
-        }
+        // try {
+        // // Get last id
+        // Long lastId = taskRepository
+        // .findById(taskRepository.count())
+        // .get().getId();
 
-        return ResponseEntity.status(HttpStatus.CREATED)
+        // // Add tasks to db
+        // for (Task task : newTasks) {
+        // task.setId(lastId++);
+        // taskRepository.save(task);
+        // }
+        // } catch (Exception e) {
+        // return ResponseEntity
+        // .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        // .body(null);
+        // }
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
                 .body(null);
     }
 
