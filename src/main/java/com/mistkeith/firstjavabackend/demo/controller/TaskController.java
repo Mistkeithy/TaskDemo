@@ -1,12 +1,10 @@
 package com.mistkeith.firstjavabackend.demo.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -43,12 +41,13 @@ public class TaskController {
      * @return JSON
      */
     @GetMapping("/tasks")
-    public ResponseEntity<List<Task>> getTasks(String search,
+    ResponseEntity<List<Task>> getTasks(String search,
             String sort,
             boolean reverse) {
 
         // Load taskRepository to Task util
-        TaskOperation taskOperation = new TaskOperation(this.taskRepository.findAll());
+        TaskOperation taskOperation = new TaskOperation(
+                this.taskRepository.findAll());
 
         // Search & Sort
         taskOperation.search(search);
@@ -56,7 +55,8 @@ public class TaskController {
         if (reverse) // reverse list
             taskOperation.reverse();
 
-        return new ResponseEntity<>(taskOperation.getTasks(), HttpStatus.CREATED);
+        return new ResponseEntity<>(taskOperation
+                .getTasks(), HttpStatus.CREATED);
     }
 
     /**
@@ -113,31 +113,37 @@ public class TaskController {
                     .status(HttpStatus.NO_CONTENT)
                     .body(null);
 
-        try {
-            // Edit some tasks
-            for (Task task : editTasks) {
-                Task _task = taskRepository
-                        .findById(task.getId())
-                        .get();
-                _task.setName(
-                        task.getName());
-                _task.setContent(
-                        task.getContent());
-                _task.setStartDate(
-                        task.getStartDate());
-                _task.setEndDate(
-                        task.getEndDate());
-                _task.setDestination(
-                        task.getDestination());
-                _task.setStatus(
-                        task.getStatus());
-                _task.setAuthor(
-                        task.getAuthor());
-            }
-        } catch (Exception e) {
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);
+        // Edit some tasks
+        for (Task task : editTasks) {
+
+            // Id nullable fix
+            if (task.getId() == null)
+                continue;
+
+            Optional<Task> taskData = taskRepository
+                    .findById(task.getId());
+            Task _task = taskData.get();
+
+            // Does it exists?
+            if (!taskData.isPresent())
+                continue;
+
+            _task.setName(
+                    task.getName());
+            _task.setContent(
+                    task.getContent());
+            _task.setStartDate(
+                    task.getStartDate());
+            _task.setEndDate(
+                    task.getEndDate());
+            _task.setDestination(
+                    task.getDestination());
+            _task.setStatus(
+                    task.getStatus());
+            _task.setAuthor(
+                    task.getAuthor());
+
+            taskRepository.save(_task);
         }
 
         return ResponseEntity
@@ -152,7 +158,7 @@ public class TaskController {
      * @return null
      */
     @DeleteMapping("/tasks")
-    ResponseEntity<?> removeTasks(
+    ResponseEntity<Void> removeTasks(
             @RequestParam Long[] ids) {
 
         // Request is empty
@@ -162,10 +168,17 @@ public class TaskController {
                     .body(null);
 
         // Remove tasks by Id
-        for (Long id : ids)
-            if (taskRepository.findById(id)
-                    .get().getId() == id)
+        for (Long id : ids) {
+            Optional<Task> taskData = taskRepository
+                    .findById(id);
+
+            // Does it exist?
+            if (!taskData.isPresent())
+                continue;
+
+            if (taskData.get().getId().equals(id))
                 taskRepository.deleteById(id);
+        }
 
         return ResponseEntity
                 .status(HttpStatus.ACCEPTED)
@@ -179,14 +192,19 @@ public class TaskController {
      * @return null
      */
     @GetMapping("/tasks/{id}")
-    public ResponseEntity<Task> getTaskById(
+    ResponseEntity<Task> getTaskById(
             @PathVariable(value = "id") Long id) {
 
-        Optional<Task> task = taskRepository.findById(id);
+        Optional<Task> task = taskRepository
+                .findById(id);
 
+        // Does it exist?
         if (task.isPresent())
-            return ResponseEntity.ok(task.get());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            return ResponseEntity
+                    .ok(task.get());
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(null);
     }
 
     /**
@@ -197,7 +215,7 @@ public class TaskController {
      * @return null
      */
     @PutMapping("/tasks/{id}")
-    public ResponseEntity<?> editTaskById(
+    ResponseEntity<Void> editTaskById(
             @PathVariable(value = "id") Long id,
             @RequestBody Task editTask) {
 
@@ -207,32 +225,35 @@ public class TaskController {
                     .status(HttpStatus.BAD_REQUEST)
                     .body(null);
 
-        // Edit tasks
-        try {
-            Task task = taskRepository
-                    .findById(id).get();
-            task.setName(
-                    editTask.getName());
-            task.setContent(
-                    editTask.getContent());
-            task.setStartDate(
-                    editTask.getStartDate());
-            task.setEndDate(
-                    editTask.getEndDate());
-            task.setDestination(
-                    editTask.getDestination());
-            task.setStatus(
-                    editTask.getStatus());
-            task.setAuthor(
-                    editTask.getAuthor());
-        } catch (Exception e) {
+        Optional<Task> taskData = taskRepository
+                .findById(id);
+        Task _task = taskData.get();
+
+        // Does it exists?
+        if (!taskData.isPresent())
             return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .status(HttpStatus.NOT_FOUND)
                     .body(null);
-        }
+
+        _task.setName(
+                editTask.getName());
+        _task.setContent(
+                editTask.getContent());
+        _task.setStartDate(
+                editTask.getStartDate());
+        _task.setEndDate(
+                editTask.getEndDate());
+        _task.setDestination(
+                editTask.getDestination());
+        _task.setStatus(
+                editTask.getStatus());
+        _task.setAuthor(
+                editTask.getAuthor());
+
+        taskRepository.save(_task);
 
         return ResponseEntity
-                .status(HttpStatus.OK)
+                .status(HttpStatus.CREATED)
                 .body(null);
     }
 
@@ -243,19 +264,22 @@ public class TaskController {
      * @return null
      */
     @DeleteMapping("/tasks/{id}")
-    public ResponseEntity<?> removeTaskById(
+    ResponseEntity<Void> removeTaskById(
             @PathVariable(value = "id") Long id) {
 
-        try {
-            taskRepository.deleteById(id);
-        } catch (Exception e) {
+        Optional<Task> taskData = taskRepository
+                .findById(id);
+
+        // Does it exist?
+        if (!taskData.isPresent())
             return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .status(HttpStatus.NOT_FOUND)
                     .body(null);
-        }
+
+        taskRepository.deleteById(id);
 
         return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
+                .status(HttpStatus.ACCEPTED)
                 .body(null);
     }
 
