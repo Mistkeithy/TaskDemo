@@ -7,4 +7,5 @@ import com.mistkeith.firstjavabackend.demo.entity.Task;
 
 @Repository
 public interface ITaskRepository extends JpaRepository<Task, Long> {
+
 }
