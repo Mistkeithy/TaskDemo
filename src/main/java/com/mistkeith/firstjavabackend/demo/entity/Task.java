@@ -19,6 +19,10 @@ public class Task {
     private String destination;
     private String author;
 
+    // Default constructor
+    public Task() {
+    }
+
     public Task(String name,
             Integer status,
             String content,
@@ -45,10 +49,6 @@ public class Task {
                 author.isEmpty())
             return true;
         return false;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public void setName(String name) {
