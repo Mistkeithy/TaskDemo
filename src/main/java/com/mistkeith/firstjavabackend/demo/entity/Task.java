@@ -6,7 +6,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
-public class Task {
+public class Task implements ITask {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -16,7 +16,7 @@ public class Task {
     private String content;
     private String startDate;
     private String endDate;
-    private String destination;
+    private String assign;
     private String author;
 
     // Default constructor
@@ -28,85 +28,101 @@ public class Task {
             String content,
             String startDate,
             String endDate,
-            String destination,
+            String assign,
             String author) {
         this.name = name;
         this.status = status;
         this.content = content;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.destination = destination;
+        this.assign = assign;
         this.author = author;
     }
 
-    public boolean isEmpty() {
+    @Override
+    public Boolean isEmpty() {
         if (name.isEmpty() &&
                 status == null &&
                 content.isEmpty() &&
                 startDate.isEmpty() &&
                 endDate.isEmpty() &&
-                destination.isEmpty() &&
+                assign.isEmpty() &&
                 author.isEmpty())
             return true;
         return false;
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
 
+    @Override
     public void setStatus(Integer status) {
         this.status = status;
     }
 
+    @Override
     public void setContent(String content) {
         this.content = content;
     }
 
+    @Override
     public void setStartDate(String startDate) {
         this.startDate = startDate;
     }
 
+    @Override
     public void setEndDate(String endDate) {
         this.endDate = endDate;
     }
 
-    public void setDestination(String destination) {
-        this.destination = destination;
+    @Override
+    public void setAssign(String assign) {
+        this.assign = assign;
     }
 
+    @Override
     public void setAuthor(String author) {
         this.author = author;
     }
 
+    @Override
     public Long getId() {
         return id;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public Integer getStatus() {
         return status;
     }
 
+    @Override
     public String getContent() {
         return content;
     }
 
+    @Override
     public String getStartDate() {
         return startDate;
     }
 
+    @Override
     public String getEndDate() {
         return endDate;
     }
 
-    public String getDestination() {
-        return destination;
+    @Override
+    public String getAssign() {
+        return assign;
     }
 
+    @Override
     public String getAuthor() {
         return author;
     }

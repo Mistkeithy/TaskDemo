@@ -26,7 +26,6 @@ public class TaskOperation {
                     task.getContent().toString().toLowerCase().contains(searching) ||
                     task.getStartDate().toLowerCase().contains(searching) ||
                     task.getEndDate().toLowerCase().contains(searching) ||
-                    task.getDestination().toLowerCase().contains(searching) ||
                     task.getAuthor().toLowerCase().contains(searching))
                 searchResults.add(task);
         }
@@ -53,9 +52,9 @@ public class TaskOperation {
                 Collections.sort(taskList, (one, two) -> ((Task) two).getEndDate()
                         .compareTo(((Task) one).getEndDate()));
                 break;
-            case "byDestination":
-                Collections.sort(taskList, (one, two) -> ((Task) two).getDestination()
-                        .compareTo(((Task) one).getDestination()));
+            case "byAssign":
+                Collections.sort(taskList, (one, two) -> ((Task) two).getAssign()
+                        .compareTo(((Task) one).getAssign()));
                 break;
             case "byAuthor":
                 Collections.sort(taskList, (one, two) -> ((Task) two).getAuthor()
